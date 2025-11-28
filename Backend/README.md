@@ -177,3 +177,160 @@ Returned when an unexpected error occurs on the server.
 2. The user's password field has `select: false` in the schema, preventing accidental exposure
 3. JWT tokens are used for subsequent authenticated requests
 4. Email addresses must be unique in the database
+
+---
+---
+
+## User Login Endpoint
+
+### `POST /users/login`
+
+Authenticates an existing user and returns an authentication token along with the user object.
+
+---
+
+### **URL**
+```
+POST /users/login
+```
+
+### **Headers**
+```
+Content-Type: application/json
+```
+
+---
+
+### **Request Body**
+
+The endpoint expects a JSON object with the following structure:
+
+```json
+{
+  "email": "string",
+  "password": "string"
+}
+```
+
+#### **Field Requirements:**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `email` | String | Yes | Must be a valid email address |
+| `password` | String | Yes | Minimum 6 characters |
+
+---
+
+### **Example Request**
+
+```bash
+curl -X POST http://localhost:3000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "mypassword123"
+  }'
+```
+
+---
+
+### **Response**
+
+#### **Success Response (Status: 200 OK)**
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzQ3YjJhNGU4ZjNhMTIzNDU2Nzg5MGEiLCJpYXQiOjE3MzI3MzQ5MjB9.M8pRsT9uVwXyZ0aBcDeFgHiJkLmNoPqK5xN7yZ9bCdE",
+  "user": {
+    "_id": "6747b2a4e8f3a123456789aa",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "socketId": null
+  }
+}
+```
+
+**Response Fields:**
+- `token` - JWT authentication token (use in `Authorization: Bearer <token>` header for authenticated requests)
+- `user._id` - Unique MongoDB ObjectId for the user
+- `user.fullname` - User's full name object containing firstname and lastname
+- `user.email` - User's email address
+- `user.socketId` - WebSocket connection ID (null until user connects via socket)
+
+**Note:** The password is not returned in the response for security reasons.
+
+---
+
+#### **Error Responses**
+
+##### **Validation Error (Status: 400 Bad Request)**
+
+Returned when the request data doesn't meet validation requirements.
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid email address",
+      "param": "email",
+      "location": "body"
+    },
+    {
+      "msg": "Password must be at least 6 characters long",
+      "param": "password",
+      "location": "body"
+    }
+  ]
+}
+```
+
+##### **Authentication Error (Status: 401 Unauthorized)**
+
+Returned when the email doesn't exist or the password is incorrect.
+
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+##### **Server Error (Status: 500 Internal Server Error)**
+
+Returned when an unexpected error occurs on the server.
+
+```json
+{
+  "error": "Internal server error"
+}
+```
+
+---
+
+### **Status Codes**
+
+| Status Code | Description |
+|-------------|-------------|
+| `200 OK` | User successfully authenticated, returns token and user object |
+| `400 Bad Request` | Validation failed - invalid or missing required fields |
+| `401 Unauthorized` | Invalid email or password |
+| `500 Internal Server Error` | Server error occurred during login |
+
+---
+
+### **Implementation Details**
+
+- **Validation:** Input validation is performed using `express-validator` middleware
+- **Password Verification:** Passwords are compared using bcrypt's compare function
+- **Authentication:** JWT tokens are generated and signed using `process.env.JWT_SECRET`
+- **Database Query:** User lookup includes password field using `.select('+password')` for verification
+
+---
+
+### **Security Notes**
+
+1. The same error message is returned for both non-existent emails and incorrect passwords to prevent user enumeration
+2. Passwords are verified using bcrypt's constant-time comparison
+3. Failed login attempts should be rate-limited (implement in production)
