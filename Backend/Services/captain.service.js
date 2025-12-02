@@ -1,4 +1,4 @@
-const captainModel = require('../models/captain.model');
+const captainModel = require('../Models/captain.model');
 
 module.exports.createCaptains = async ({
      firstname, lastname, email, password, 
@@ -11,7 +11,7 @@ module.exports.createCaptains = async ({
         fullname: { firstname, lastname },
         email,
         password: await captainModel.hashPassword(password),
-        vechicle: {
+        vehicle: {
             color,
             plateNumber,
             capacity,
