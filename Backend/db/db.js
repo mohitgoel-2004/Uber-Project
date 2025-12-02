@@ -2,15 +2,12 @@ const mongoose = require('mongoose');
 
 function connectToDB() {
     mongoose
-        .connect(process.env.DB_CONNECT, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        })
+        .connect(process.env.DB_CONNECT)   // ❗ No options in Mongoose v7+
         .then(() => {
-            console.log('Connected to the database');
+            console.log('✅ Connected to the database');
         })
         .catch((err) => {
-            console.error('Database connection failed:', err.message);
+            console.error('❌ Database connection failed:', err.message);
         });
 }
 

@@ -5,22 +5,28 @@ const express = require('express');
 const app = express();
 
 const cors = require('cors');
-app.use(cors());
+const cookieParser = require('cookie-parser');
+
 const connectToDB = require('./db/db');
 const userRoutes = require('./routes/user.routes');
-const cookiesParser = require('cookie-parser');
-app.use(cookiesParser());
+const captainRoutes = require('./routes/captain.routes');
 
-connectToDB();
+// Middlewares
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
+// Database
+connectToDB();
 
+// Test route
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-
+// Routes
 app.use('/users', userRoutes);
+app.use('/captains', captainRoutes);
 
 module.exports = app;
