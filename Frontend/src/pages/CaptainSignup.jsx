@@ -213,7 +213,7 @@ const CaptainSignup = () => {
             to="/user-signup" 
             className="text-white text-sm hover:text-yellow-400 transition-colors inline-flex items-center gap-2"
           >
-            ← Join as a User instead
+            ← Join  a User instead
           </Link>
         </div>
       </div>
